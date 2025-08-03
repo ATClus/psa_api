@@ -37,3 +37,5 @@ teach.md
 src/main/resources/application-dev.properties
 
 src/main/resources/db/changelog/db.changelog-v1.0.xml
+
+logs/

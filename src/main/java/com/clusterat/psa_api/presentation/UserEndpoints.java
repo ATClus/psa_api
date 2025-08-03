@@ -7,6 +7,8 @@ import com.clusterat.psa_api.application.interfaces.IUserRepository;
 import com.clusterat.psa_api.domain.entities.UserEntity;
 import com.clusterat.psa_api.presentation.dto.UserPresentationDTO;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,7 @@ public class UserEndpoints {
 
     private final IUserRepository userRepository;
     private final CreateUserCommandHandler createUserCommandHandler;
+    private static final Logger log = LoggerFactory.getLogger(UserEndpoints.class);
 
     public UserEndpoints(IUserRepository userRepository, CreateUserCommandHandler createUserCommandHandler) {
         this.userRepository = userRepository;
@@ -29,6 +32,7 @@ public class UserEndpoints {
 
     @GetMapping
     public CompletableFuture<ResponseEntity<List<UserApplicationDTO.Response>>> getUsers() {
+        log.info("Working on getting users list");
         return userRepository.GetAllAsync()
                 .thenApply(users -> {
                     List<UserApplicationDTO.Response> response = users.stream()
@@ -42,6 +46,7 @@ public class UserEndpoints {
 
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<UserApplicationDTO.Response>> getUserById(@PathVariable("id") int id) {
+        log.info("Working on getting user by id {}", id);
         return userRepository.GetByIdAsync(id)
                 .thenApply(userOpt -> {
                     if (userOpt.isPresent()) {
@@ -56,6 +61,7 @@ public class UserEndpoints {
 
     @GetMapping("/cognito/{cognitoId}")
     public CompletableFuture<ResponseEntity<UserApplicationDTO.Response>> getUserByCognitoId(@PathVariable("cognitoId") int cognitoId) {
+        log.info("Working on getting user by cognito id {}", cognitoId);
         return userRepository.GetByCognitoIdAsync(cognitoId)
                 .thenApply(userOpt -> {
                     if (userOpt.isPresent()) {
@@ -70,6 +76,7 @@ public class UserEndpoints {
 
     @PostMapping
     public CompletableFuture<ResponseEntity<UserApplicationDTO.Response>> createUser(@Valid @RequestBody UserPresentationDTO.CreateRequest request) {
+        log.info("Working on create user {}", request);
         CreteUserCommand command = new CreteUserCommand(request.cognitoId());
         return createUserCommandHandler.handle(command)
                 .thenApply(user -> {
@@ -80,6 +87,7 @@ public class UserEndpoints {
 
     @PutMapping("/{id}")
     public CompletableFuture<ResponseEntity<UserApplicationDTO.Response>> updateUser(@PathVariable("id") int id, @Valid @RequestBody UserPresentationDTO.CreateRequest request) {
+        log.info("Working on update user {}", request);
         return userRepository.GetByIdAsync(id)
                 .thenCompose(userOpt -> {
                     if (userOpt.isPresent()) {
@@ -98,6 +106,7 @@ public class UserEndpoints {
 
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteUser(@PathVariable("id") int id) {
+        log.info("Working on delete user {}", id);
         return userRepository.DeleteAsync(id)
                 .thenApply(deletedUser -> ResponseEntity.noContent().<Void>build())
                 .exceptionally(throwable -> ResponseEntity.notFound().build());
