@@ -2,17 +2,15 @@ package com.clusterat.psa_api.domain.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.Contract;
 
 @Entity
 @Table(name = "users")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class UserEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -21,7 +19,15 @@ public class UserEntity {
     @Column(nullable = false)
     private int cognitoId;
 
-    public UserEntity(int cognitoId) {
+    @Contract(pure = true)
+    private UserEntity(int cognitoId) {
         this.cognitoId = cognitoId;
+    }
+
+    public static @org.jetbrains.annotations.NotNull UserEntity create(int cognitoId) {
+        if (cognitoId <= 0) {
+            throw new IllegalArgumentException("Cognito ID must be positive");
+        }
+        return new UserEntity(cognitoId);
     }
 }

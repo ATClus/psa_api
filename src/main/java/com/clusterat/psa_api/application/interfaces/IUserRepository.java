@@ -1,9 +1,10 @@
 package com.clusterat.psa_api.application.interfaces;
 
+import com.clusterat.psa_api.domain.entities.UserEntity;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import com.clusterat.psa_api.domain.entities.UserEntity;
 
 public interface IUserRepository {
     CompletableFuture<Optional<UserEntity>> GetByIdAsync(int id);

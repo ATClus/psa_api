@@ -18,7 +18,7 @@ public class CreateUserCommandHandler {
     }
 
     public CompletableFuture<UserEntity> handle(CreteUserCommand command) {
-        UserEntity newUser = new UserEntity(command.cognitoId());
+        UserEntity newUser = UserEntity.create(command.cognitoId());
         return userRepository.AddAsync(newUser);
     }
 }
