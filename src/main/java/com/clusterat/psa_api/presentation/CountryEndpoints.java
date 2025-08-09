@@ -6,6 +6,13 @@ import com.clusterat.psa_api.application.handlers.CreateCountryCommandHandler;
 import com.clusterat.psa_api.application.interfaces.ICountryRepository;
 import com.clusterat.psa_api.domain.entities.CountryEntity;
 import com.clusterat.psa_api.presentation.dto.CountryPresentationDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/countries")
+@Tag(name = "Country Management", description = "API endpoints for managing countries")
 public class CountryEndpoints {
 
     private final ICountryRepository countryRepository;
@@ -31,6 +39,13 @@ public class CountryEndpoints {
         this.createCountryCommandHandler = createCountryCommandHandler;
     }
 
+    @Operation(summary = "Get all countries", description = "Retrieve a list of all countries in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved countries",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CountryApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public CompletableFuture<ResponseEntity<List<CountryApplicationDTO.Response>>> getCountries() {
         MDC.put("operation", "getCountries");
@@ -59,8 +74,17 @@ public class CountryEndpoints {
                 });
     }
 
+    @Operation(summary = "Get country by ID", description = "Retrieve a specific country by its unique identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved country",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CountryApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Country not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/{id}")
-    public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> getCountryById(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> getCountryById(
+            @Parameter(description = "Country ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "getCountryById");
         MDC.put("countryId", String.valueOf(id));
         log.info("Starting to retrieve country by id: {}", id);
@@ -103,8 +127,17 @@ public class CountryEndpoints {
         return future;
     }
 
+    @Operation(summary = "Get country by ISO code", description = "Retrieve a country by its ISO country code")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved country",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CountryApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Country not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/iso/{isoCode}")
-    public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> getCountryByIsoCode(@PathVariable("isoCode") String isoCode) {
+    public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> getCountryByIsoCode(
+            @Parameter(description = "ISO country code", required = true) @PathVariable("isoCode") String isoCode) {
         MDC.put("operation", "getCountryByIsoCode");
         MDC.put("isoCode", isoCode);
         log.info("Starting to retrieve country by ISO code: {}", isoCode);
@@ -147,8 +180,18 @@ public class CountryEndpoints {
         return future;
     }
 
+    @Operation(summary = "Create new country", description = "Create a new country in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Successfully created country",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CountryApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
-    public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> createCountry(@Valid @RequestBody CountryPresentationDTO.CreateRequest request) {
+    public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> createCountry(
+            @Parameter(description = "Country creation data", required = true)
+            @Valid @RequestBody CountryPresentationDTO.CreateRequest request) {
         MDC.put("operation", "createCountry");
         MDC.put("isoCode", request.isoCode());
         log.info("Starting to create country with ISO code: {}", request.isoCode());
@@ -177,8 +220,20 @@ public class CountryEndpoints {
                 });
     }
 
+    @Operation(summary = "Update country", description = "Update an existing country's information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated country",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = CountryApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Country not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PutMapping("/{id}")
-    public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> updateCountry(@PathVariable("id") int id, @Valid @RequestBody CountryPresentationDTO.UpdateRequest request) {
+    public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> updateCountry(
+            @Parameter(description = "Country ID", required = true) @PathVariable("id") int id,
+            @Parameter(description = "Country update data", required = true)
+            @Valid @RequestBody CountryPresentationDTO.UpdateRequest request) {
         MDC.put("operation", "updateCountry");
         MDC.put("countryId", String.valueOf(id));
         log.info("Starting to update country: {}", id);
@@ -236,8 +291,15 @@ public class CountryEndpoints {
         return future;
     }
 
+    @Operation(summary = "Delete country", description = "Delete a country from the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully deleted country"),
+            @ApiResponse(responseCode = "404", description = "Country not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @DeleteMapping("/{id}")
-    public CompletableFuture<ResponseEntity<Void>> deleteCountry(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<Void>> deleteCountry(
+            @Parameter(description = "Country ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "deleteCountry");
         MDC.put("countryId", String.valueOf(id));
         log.info("Starting to delete country: {}", id);

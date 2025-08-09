@@ -6,6 +6,13 @@ import com.clusterat.psa_api.application.handlers.CreateOccurrenceCommandHandler
 import com.clusterat.psa_api.application.interfaces.IOccurrenceRepository;
 import com.clusterat.psa_api.domain.entities.OccurrenceEntity;
 import com.clusterat.psa_api.presentation.dto.OccurrencePresentationDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/occurrences")
+@Tag(name = "Occurrence Management", description = "API endpoints for managing public safety occurrences and alerts")
 public class OccurrenceEndpoints {
 
     private final IOccurrenceRepository occurrenceRepository;
@@ -31,6 +39,13 @@ public class OccurrenceEndpoints {
         this.createOccurrenceCommandHandler = createOccurrenceCommandHandler;
     }
 
+    @Operation(summary = "Get all occurrences", description = "Retrieve a list of all occurrences in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved occurrences",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OccurrenceApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public CompletableFuture<ResponseEntity<List<OccurrenceApplicationDTO.Response>>> getOccurrences() {
         MDC.put("operation", "getOccurrences");
@@ -65,8 +80,17 @@ public class OccurrenceEndpoints {
                 });
     }
 
+    @Operation(summary = "Get occurrence by ID", description = "Retrieve a specific occurrence by its unique identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved occurrence",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OccurrenceApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Occurrence not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/{id}")
-    public CompletableFuture<ResponseEntity<OccurrenceApplicationDTO.Response>> getOccurrenceById(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<OccurrenceApplicationDTO.Response>> getOccurrenceById(
+            @Parameter(description = "Occurrence ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "getOccurrenceById");
         MDC.put("occurrenceId", String.valueOf(id));
         log.info("Starting to retrieve occurrence by id: {}", id);
@@ -115,6 +139,13 @@ public class OccurrenceEndpoints {
         return future;
     }
 
+    @Operation(summary = "Get active occurrences", description = "Retrieve all currently active occurrences")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved active occurrences",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OccurrenceApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/active")
     public CompletableFuture<ResponseEntity<List<OccurrenceApplicationDTO.Response>>> getActiveOccurrences() {
         MDC.put("operation", "getActiveOccurrences");
@@ -149,6 +180,13 @@ public class OccurrenceEndpoints {
                 });
     }
 
+    @Operation(summary = "Get inactive occurrences", description = "Retrieve all currently inactive occurrences")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved inactive occurrences",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OccurrenceApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/inactive")
     public CompletableFuture<ResponseEntity<List<OccurrenceApplicationDTO.Response>>> getInactiveOccurrences() {
         MDC.put("operation", "getInactiveOccurrences");
@@ -183,8 +221,16 @@ public class OccurrenceEndpoints {
                 });
     }
 
+    @Operation(summary = "Get occurrences by user", description = "Retrieve all occurrences created by a specific user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user occurrences",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OccurrenceApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/user/{userId}")
-    public CompletableFuture<ResponseEntity<List<OccurrenceApplicationDTO.Response>>> getOccurrencesByUserId(@PathVariable("userId") int userId) {
+    public CompletableFuture<ResponseEntity<List<OccurrenceApplicationDTO.Response>>> getOccurrencesByUserId(
+            @Parameter(description = "User ID", required = true) @PathVariable("userId") int userId) {
         MDC.put("operation", "getOccurrencesByUserId");
         MDC.put("userId", String.valueOf(userId));
         log.info("Starting to retrieve occurrences for user: {}", userId);
@@ -218,8 +264,18 @@ public class OccurrenceEndpoints {
                 });
     }
 
+    @Operation(summary = "Create new occurrence", description = "Create a new public safety occurrence or alert")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Successfully created occurrence",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OccurrenceApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
-    public CompletableFuture<ResponseEntity<OccurrenceApplicationDTO.Response>> createOccurrence(@Valid @RequestBody OccurrencePresentationDTO.CreateRequest request) {
+    public CompletableFuture<ResponseEntity<OccurrenceApplicationDTO.Response>> createOccurrence(
+            @Parameter(description = "Occurrence creation data", required = true)
+            @Valid @RequestBody OccurrencePresentationDTO.CreateRequest request) {
         MDC.put("operation", "createOccurrence");
         MDC.put("addressId", String.valueOf(request.addressId()));
         MDC.put("userId", String.valueOf(request.userId()));
@@ -262,8 +318,20 @@ public class OccurrenceEndpoints {
                 });
     }
 
+    @Operation(summary = "Update occurrence", description = "Update an existing occurrence's information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated occurrence",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OccurrenceApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Occurrence not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PutMapping("/{id}")
-    public CompletableFuture<ResponseEntity<OccurrenceApplicationDTO.Response>> updateOccurrence(@PathVariable("id") int id, @Valid @RequestBody OccurrencePresentationDTO.UpdateRequest request) {
+    public CompletableFuture<ResponseEntity<OccurrenceApplicationDTO.Response>> updateOccurrence(
+            @Parameter(description = "Occurrence ID", required = true) @PathVariable("id") int id,
+            @Parameter(description = "Occurrence update data", required = true)
+            @Valid @RequestBody OccurrencePresentationDTO.UpdateRequest request) {
         MDC.put("operation", "updateOccurrence");
         MDC.put("occurrenceId", String.valueOf(id));
         MDC.put("addressId", String.valueOf(request.addressId()));
@@ -333,8 +401,15 @@ public class OccurrenceEndpoints {
         return future;
     }
 
+    @Operation(summary = "Delete occurrence", description = "Delete an occurrence from the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully deleted occurrence"),
+            @ApiResponse(responseCode = "404", description = "Occurrence not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @DeleteMapping("/{id}")
-    public CompletableFuture<ResponseEntity<Void>> deleteOccurrence(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<Void>> deleteOccurrence(
+            @Parameter(description = "Occurrence ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "deleteOccurrence");
         MDC.put("occurrenceId", String.valueOf(id));
         log.info("Starting to delete occurrence: {}", id);

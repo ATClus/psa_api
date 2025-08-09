@@ -6,6 +6,13 @@ import com.clusterat.psa_api.application.handlers.CreateStateCommandHandler;
 import com.clusterat.psa_api.application.interfaces.IStateRepository;
 import com.clusterat.psa_api.domain.entities.StateEntity;
 import com.clusterat.psa_api.presentation.dto.StatePresentationDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/states")
+@Tag(name = "State Management", description = "API endpoints for managing states and provinces")
 public class StateEndpoints {
 
     private final IStateRepository stateRepository;
@@ -31,6 +39,13 @@ public class StateEndpoints {
         this.createStateCommandHandler = createStateCommandHandler;
     }
 
+    @Operation(summary = "Get all states", description = "Retrieve a list of all states in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved states",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StateApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public CompletableFuture<ResponseEntity<List<StateApplicationDTO.Response>>> getStates() {
         MDC.put("operation", "getStates");
@@ -61,8 +76,17 @@ public class StateEndpoints {
                 });
     }
 
+    @Operation(summary = "Get state by ID", description = "Retrieve a specific state by its unique identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved state",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StateApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "State not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/{id}")
-    public CompletableFuture<ResponseEntity<StateApplicationDTO.Response>> getStateById(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<StateApplicationDTO.Response>> getStateById(
+            @Parameter(description = "State ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "getStateById");
         MDC.put("stateId", String.valueOf(id));
         log.info("Starting to retrieve state by id: {}", id);
@@ -107,8 +131,17 @@ public class StateEndpoints {
         return future;
     }
 
+    @Operation(summary = "Get state by IBGE code", description = "Retrieve a state by its Brazilian IBGE geographic code")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved state",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StateApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "State not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/ibge/{ibgeCode}")
-    public CompletableFuture<ResponseEntity<StateApplicationDTO.Response>> getStateByIbgeCode(@PathVariable("ibgeCode") String ibgeCode) {
+    public CompletableFuture<ResponseEntity<StateApplicationDTO.Response>> getStateByIbgeCode(
+            @Parameter(description = "IBGE geographic code", required = true) @PathVariable("ibgeCode") String ibgeCode) {
         MDC.put("operation", "getStateByIbgeCode");
         MDC.put("ibgeCode", ibgeCode);
         log.info("Starting to retrieve state by IBGE code: {}", ibgeCode);
@@ -153,8 +186,18 @@ public class StateEndpoints {
         return future;
     }
 
+    @Operation(summary = "Create new state", description = "Create a new state or province in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Successfully created state",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StateApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
-    public CompletableFuture<ResponseEntity<StateApplicationDTO.Response>> createState(@Valid @RequestBody StatePresentationDTO.CreateRequest request) {
+    public CompletableFuture<ResponseEntity<StateApplicationDTO.Response>> createState(
+            @Parameter(description = "State creation data", required = true)
+            @Valid @RequestBody StatePresentationDTO.CreateRequest request) {
         MDC.put("operation", "createState");
         MDC.put("countryId", String.valueOf(request.countryId()));
         MDC.put("ibgeCode", request.ibgeCode());
@@ -188,8 +231,15 @@ public class StateEndpoints {
                 });
     }
 
+    @Operation(summary = "Delete state", description = "Delete a state from the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully deleted state"),
+            @ApiResponse(responseCode = "404", description = "State not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @DeleteMapping("/{id}")
-    public CompletableFuture<ResponseEntity<Void>> deleteState(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<Void>> deleteState(
+            @Parameter(description = "State ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "deleteState");
         MDC.put("stateId", String.valueOf(id));
         log.info("Starting to delete state: {}", id);

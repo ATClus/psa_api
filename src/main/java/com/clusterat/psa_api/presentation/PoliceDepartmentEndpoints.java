@@ -6,6 +6,13 @@ import com.clusterat.psa_api.application.handlers.CreatePoliceDepartmentCommandH
 import com.clusterat.psa_api.application.interfaces.IPoliceDepartmentRepository;
 import com.clusterat.psa_api.domain.entities.PoliceDepartmentEntity;
 import com.clusterat.psa_api.presentation.dto.PoliceDepartmentPresentationDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/police-departments")
+@Tag(name = "Police Department Management", description = "API endpoints for managing police departments and law enforcement facilities")
 public class PoliceDepartmentEndpoints {
 
     private final IPoliceDepartmentRepository policeDepartmentRepository;
@@ -31,6 +39,13 @@ public class PoliceDepartmentEndpoints {
         this.createPoliceDepartmentCommandHandler = createPoliceDepartmentCommandHandler;
     }
 
+    @Operation(summary = "Get all police departments", description = "Retrieve a list of all police departments in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved police departments",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PoliceDepartmentApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public CompletableFuture<ResponseEntity<List<PoliceDepartmentApplicationDTO.Response>>> getPoliceDepartments() {
         MDC.put("operation", "getPoliceDepartments");
@@ -66,8 +81,17 @@ public class PoliceDepartmentEndpoints {
                 });
     }
 
+    @Operation(summary = "Get police department by ID", description = "Retrieve a specific police department by its unique identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved police department",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PoliceDepartmentApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Police department not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/{id}")
-    public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> getPoliceDepartmentById(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> getPoliceDepartmentById(
+            @Parameter(description = "Police Department ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "getPoliceDepartmentById");
         MDC.put("policeDepartmentId", String.valueOf(id));
         log.info("Starting to retrieve police department by id: {}", id);
@@ -117,8 +141,17 @@ public class PoliceDepartmentEndpoints {
         return future;
     }
 
+    @Operation(summary = "Get police department by Overpass ID", description = "Retrieve a police department by its OpenStreetMap Overpass API identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved police department",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PoliceDepartmentApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Police department not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/overpass/{overpassId}")
-    public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> getPoliceDepartmentByOverpassId(@PathVariable("overpassId") String overpassId) {
+    public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> getPoliceDepartmentByOverpassId(
+            @Parameter(description = "OpenStreetMap Overpass ID of the police department", required = true) @PathVariable("overpassId") String overpassId) {
         MDC.put("operation", "getPoliceDepartmentByOverpassId");
         MDC.put("overpassId", overpassId);
         log.info("Starting to retrieve police department by overpass id: {}", overpassId);
@@ -168,8 +201,18 @@ public class PoliceDepartmentEndpoints {
         return future;
     }
 
+    @Operation(summary = "Create new police department", description = "Create a new police department in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Successfully created police department",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PoliceDepartmentApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
-    public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> createPoliceDepartment(@Valid @RequestBody PoliceDepartmentPresentationDTO.CreateRequest request) {
+    public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> createPoliceDepartment(
+            @Parameter(description = "Police department creation data", required = true)
+            @Valid @RequestBody PoliceDepartmentPresentationDTO.CreateRequest request) {
         MDC.put("operation", "createPoliceDepartment");
         MDC.put("addressId", String.valueOf(request.addressId()));
         MDC.put("overpassId", request.overpassId());
@@ -213,8 +256,20 @@ public class PoliceDepartmentEndpoints {
                 });
     }
 
+    @Operation(summary = "Update police department", description = "Update an existing police department's information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated police department",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PoliceDepartmentApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Police department not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PutMapping("/{id}")
-    public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> updatePoliceDepartment(@PathVariable("id") int id, @Valid @RequestBody PoliceDepartmentPresentationDTO.UpdateRequest request) {
+    public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> updatePoliceDepartment(
+            @Parameter(description = "Police Department ID", required = true) @PathVariable("id") int id,
+            @Parameter(description = "Police department update data", required = true)
+            @Valid @RequestBody PoliceDepartmentPresentationDTO.UpdateRequest request) {
         MDC.put("operation", "updatePoliceDepartment");
         MDC.put("policeDepartmentId", String.valueOf(id));
         MDC.put("addressId", String.valueOf(request.addressId()));
@@ -286,8 +341,15 @@ public class PoliceDepartmentEndpoints {
         return future;
     }
 
+    @Operation(summary = "Delete police department", description = "Delete a police department from the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully deleted police department"),
+            @ApiResponse(responseCode = "404", description = "Police department not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @DeleteMapping("/{id}")
-    public CompletableFuture<ResponseEntity<Void>> deletePoliceDepartment(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<Void>> deletePoliceDepartment(
+            @Parameter(description = "Police Department ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "deletePoliceDepartment");
         MDC.put("policeDepartmentId", String.valueOf(id));
         log.info("Starting to delete police department: {}", id);
