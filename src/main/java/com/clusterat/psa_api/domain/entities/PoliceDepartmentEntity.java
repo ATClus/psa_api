@@ -69,7 +69,37 @@ public class PoliceDepartmentEntity {
         this.address = address;
     }
 
-    public static PoliceDepartmentEntity create(String overpassId, String name, String shortName, String operator, String ownership, String phone, String email, String latitude, String longitude, AddressEntity address) {
-        return new PoliceDepartmentEntity(overpassId, name, shortName, operator, ownership, phone, email, latitude, longitude, address);
+    public static @org.jetbrains.annotations.NotNull PoliceDepartmentEntity create(String overpassId, String name, String shortName, String operator, String ownership, String phone, String email, String latitude, String longitude, AddressEntity address) {
+        if (overpassId == null || overpassId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Overpass ID cannot be null or empty");
+        }
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        if (shortName == null || shortName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Short name cannot be null or empty");
+        }
+        if (operator == null || operator.trim().isEmpty()) {
+            throw new IllegalArgumentException("Operator cannot be null or empty");
+        }
+        if (ownership == null || ownership.trim().isEmpty()) {
+            throw new IllegalArgumentException("Ownership cannot be null or empty");
+        }
+        if (phone == null || phone.trim().isEmpty()) {
+            throw new IllegalArgumentException("Phone cannot be null or empty");
+        }
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        if (latitude == null || latitude.trim().isEmpty()) {
+            throw new IllegalArgumentException("Latitude cannot be null or empty");
+        }
+        if (longitude == null || longitude.trim().isEmpty()) {
+            throw new IllegalArgumentException("Longitude cannot be null or empty");
+        }
+        if (address == null) {
+            throw new IllegalArgumentException("Address cannot be null");
+        }
+        return new PoliceDepartmentEntity(overpassId.trim(), name.trim(), shortName.trim(), operator.trim(), ownership.trim(), phone.trim(), email.trim(), latitude.trim(), longitude.trim(), address);
     }
 }

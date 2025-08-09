@@ -39,7 +39,19 @@ public class CityEntity {
         this.state = state;
     }
 
-    public static CityEntity create(String name, String shortName, String ibgeCode, StateEntity state) {
-        return new CityEntity(name, shortName, ibgeCode, state);
+    public static @org.jetbrains.annotations.NotNull CityEntity create(String name, String shortName, String ibgeCode, StateEntity state) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        if (shortName == null || shortName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Short name cannot be null or empty");
+        }
+        if (ibgeCode == null || ibgeCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("IBGE code cannot be null or empty");
+        }
+        if (state == null) {
+            throw new IllegalArgumentException("State cannot be null");
+        }
+        return new CityEntity(name.trim(), shortName.trim(), ibgeCode.trim(), state);
     }
 }

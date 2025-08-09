@@ -34,7 +34,16 @@ public class CountryEntity {
         this.isoCode = isoCode;
     }
 
-    public static CountryEntity create(String name, String shortName, String isoCode) {
-        return new CountryEntity(name, shortName, isoCode);
+    public static @org.jetbrains.annotations.NotNull CountryEntity create(String name, String shortName, String isoCode) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        if (shortName == null || shortName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Short name cannot be null or empty");
+        }
+        if (isoCode == null || isoCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("ISO code cannot be null or empty");
+        }
+        return new CountryEntity(name.trim(), shortName.trim(), isoCode.trim());
     }
 }

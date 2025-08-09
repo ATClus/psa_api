@@ -45,7 +45,22 @@ public class StateEntity {
         this.country = country;
     }
 
-    public static StateEntity create(String name, String shortName, Region region, String ibgeCode, CountryEntity country) {
-        return new StateEntity(name, shortName, region, ibgeCode, country);
+    public static @org.jetbrains.annotations.NotNull StateEntity create(String name, String shortName, Region region, String ibgeCode, CountryEntity country) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        if (shortName == null || shortName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Short name cannot be null or empty");
+        }
+        if (region == null) {
+            throw new IllegalArgumentException("Region cannot be null");
+        }
+        if (ibgeCode == null || ibgeCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("IBGE code cannot be null or empty");
+        }
+        if (country == null) {
+            throw new IllegalArgumentException("Country cannot be null");
+        }
+        return new StateEntity(name.trim(), shortName.trim(), region, ibgeCode.trim(), country);
     }
 }

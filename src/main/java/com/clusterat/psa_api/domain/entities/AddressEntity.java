@@ -44,7 +44,22 @@ public class AddressEntity {
         this.city = city;
     }
 
-    public static AddressEntity create(String street, String number, String complement, String neighborhood, CityEntity city) {
-        return new AddressEntity(street, number, complement, neighborhood, city);
+    public static @org.jetbrains.annotations.NotNull AddressEntity create(String street, String number, String complement, String neighborhood, CityEntity city) {
+        if (street == null || street.trim().isEmpty()) {
+            throw new IllegalArgumentException("Street cannot be null or empty");
+        }
+        if (number == null || number.trim().isEmpty()) {
+            throw new IllegalArgumentException("Number cannot be null or empty");
+        }
+        if (complement == null || complement.trim().isEmpty()) {
+            throw new IllegalArgumentException("Complement cannot be null or empty");
+        }
+        if (neighborhood == null || neighborhood.trim().isEmpty()) {
+            throw new IllegalArgumentException("Neighborhood cannot be null or empty");
+        }
+        if (city == null) {
+            throw new IllegalArgumentException("City cannot be null");
+        }
+        return new AddressEntity(street.trim(), number.trim(), complement.trim(), neighborhood.trim(), city);
     }
 }
