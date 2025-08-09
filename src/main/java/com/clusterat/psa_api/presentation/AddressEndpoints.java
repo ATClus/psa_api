@@ -6,6 +6,13 @@ import com.clusterat.psa_api.application.handlers.CreateAddressCommandHandler;
 import com.clusterat.psa_api.application.interfaces.IAddressRepository;
 import com.clusterat.psa_api.domain.entities.AddressEntity;
 import com.clusterat.psa_api.presentation.dto.AddressPresentationDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/addresses")
+@Tag(name = "Address Management", description = "API endpoints for managing addresses and location information")
 public class AddressEndpoints {
 
     private final IAddressRepository addressRepository;
@@ -31,6 +39,13 @@ public class AddressEndpoints {
         this.createAddressCommandHandler = createAddressCommandHandler;
     }
 
+    @Operation(summary = "Get all addresses", description = "Retrieve a list of all addresses in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved addresses",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AddressApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public CompletableFuture<ResponseEntity<List<AddressApplicationDTO.Response>>> getAddresses() {
         MDC.put("operation", "getAddresses");
@@ -61,8 +76,17 @@ public class AddressEndpoints {
                 });
     }
 
+    @Operation(summary = "Get address by ID", description = "Retrieve a specific address by its unique identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved address",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AddressApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Address not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/{id}")
-    public CompletableFuture<ResponseEntity<AddressApplicationDTO.Response>> getAddressById(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<AddressApplicationDTO.Response>> getAddressById(
+            @Parameter(description = "Address ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "getAddressById");
         MDC.put("addressId", String.valueOf(id));
         log.info("Starting to retrieve address by id: {}", id);
@@ -107,8 +131,18 @@ public class AddressEndpoints {
         return future;
     }
 
+    @Operation(summary = "Create new address", description = "Create a new address in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Successfully created address",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AddressApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
-    public CompletableFuture<ResponseEntity<AddressApplicationDTO.Response>> createAddress(@Valid @RequestBody AddressPresentationDTO.CreateRequest request) {
+    public CompletableFuture<ResponseEntity<AddressApplicationDTO.Response>> createAddress(
+            @Parameter(description = "Address creation data", required = true)
+            @Valid @RequestBody AddressPresentationDTO.CreateRequest request) {
         MDC.put("operation", "createAddress");
         MDC.put("cityId", String.valueOf(request.cityId()));
         log.info("Starting to create address for city: {}", request.cityId());
@@ -141,8 +175,20 @@ public class AddressEndpoints {
                 });
     }
 
+    @Operation(summary = "Update address", description = "Update an existing address's information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated address",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AddressApplicationDTO.Response.class))),
+            @ApiResponse(responseCode = "404", description = "Address not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PutMapping("/{id}")
-    public CompletableFuture<ResponseEntity<AddressApplicationDTO.Response>> updateAddress(@PathVariable("id") int id, @Valid @RequestBody AddressPresentationDTO.UpdateRequest request) {
+    public CompletableFuture<ResponseEntity<AddressApplicationDTO.Response>> updateAddress(
+            @Parameter(description = "Address ID", required = true) @PathVariable("id") int id,
+            @Parameter(description = "Address update data", required = true)
+            @Valid @RequestBody AddressPresentationDTO.UpdateRequest request) {
         MDC.put("operation", "updateAddress");
         MDC.put("addressId", String.valueOf(id));
         MDC.put("cityId", String.valueOf(request.cityId()));
@@ -204,8 +250,15 @@ public class AddressEndpoints {
         return future;
     }
 
+    @Operation(summary = "Delete address", description = "Delete an address from the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Successfully deleted address"),
+            @ApiResponse(responseCode = "404", description = "Address not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @DeleteMapping("/{id}")
-    public CompletableFuture<ResponseEntity<Void>> deleteAddress(@PathVariable("id") int id) {
+    public CompletableFuture<ResponseEntity<Void>> deleteAddress(
+            @Parameter(description = "Address ID", required = true) @PathVariable("id") int id) {
         MDC.put("operation", "deleteAddress");
         MDC.put("addressId", String.valueOf(id));
         log.info("Starting to delete address: {}", id);
