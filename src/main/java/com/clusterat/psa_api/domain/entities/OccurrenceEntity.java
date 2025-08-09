@@ -62,7 +62,25 @@ public class OccurrenceEntity {
         this.user = user;
     }
 
-    public static OccurrenceEntity create(String name, String description, Date dateStart, Date dateEnd, Date dateUpdate, boolean active, Intensity intensity, AddressEntity address, UserEntity user) {
-        return new OccurrenceEntity(name, description, dateStart, dateEnd, dateUpdate, active, intensity, address, user);
+    public static @org.jetbrains.annotations.NotNull OccurrenceEntity create(String name, String description, Date dateStart, Date dateEnd, Date dateUpdate, boolean active, Intensity intensity, AddressEntity address, UserEntity user) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        if (description == null || description.trim().isEmpty()) {
+            throw new IllegalArgumentException("Description cannot be null or empty");
+        }
+        if (dateStart == null) {
+            throw new IllegalArgumentException("Date start cannot be null");
+        }
+        if (intensity == null) {
+            throw new IllegalArgumentException("Intensity cannot be null");
+        }
+        if (address == null) {
+            throw new IllegalArgumentException("Address cannot be null");
+        }
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        return new OccurrenceEntity(name.trim(), description.trim(), dateStart, dateEnd, dateUpdate, active, intensity, address, user);
     }
 }
