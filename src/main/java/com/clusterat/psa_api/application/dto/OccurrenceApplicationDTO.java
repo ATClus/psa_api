@@ -1,6 +1,7 @@
 package com.clusterat.psa_api.application.dto;
 
 import com.clusterat.psa_api.domain.value_objects.Intensity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -38,16 +39,75 @@ public final class OccurrenceApplicationDTO {
             Integer userId
     ) {}
 
+    @Schema(description = "Occurrence response data")
     public static record Response(
+            @Schema(
+                description = "Unique identifier of the occurrence",
+                example = "1"
+            )
             int id,
+            
+            @Schema(
+                description = "Name/title of the occurrence",
+                example = "Emergency Alert"
+            )
             String name,
+            
+            @Schema(
+                description = "Detailed description of the occurrence",
+                example = "Fire in downtown area requiring immediate evacuation"
+            )
             String description,
+            
+            @Schema(
+                description = "Start date and time of the occurrence",
+                example = "2024-08-10T10:00:00.000Z",
+                type = "string",
+                format = "date-time"
+            )
             Date dateStart,
+            
+            @Schema(
+                description = "End date and time of the occurrence (null if ongoing)",
+                example = "2024-08-10T15:00:00.000Z",
+                type = "string",
+                format = "date-time",
+                nullable = true
+            )
             Date dateEnd,
+            
+            @Schema(
+                description = "Last update timestamp",
+                example = "2024-08-10T12:30:00.000Z",
+                type = "string",
+                format = "date-time",
+                nullable = true
+            )
             Date dateUpdate,
+            
+            @Schema(
+                description = "Whether the occurrence is currently active",
+                example = "true"
+            )
             boolean active,
+            
+            @Schema(
+                description = "Severity level of the occurrence",
+                example = "HIGH",
+                allowableValues = {"LOW", "MODERATE", "HIGH", "SEVERE", "CRITICAL"}
+            )
             Intensity intensity,
+            
+            @Schema(
+                description = "ID of the address where the occurrence is taking place",
+                example = "1"
+            )
             int addressId,
+            
+            @Schema(
+                description = "ID of the user who created/reported the occurrence",
+                example = "123"
+            )
             int userId
     ) {}
 }

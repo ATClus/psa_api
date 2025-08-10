@@ -9,7 +9,9 @@ import com.clusterat.psa_api.presentation.dto.OccurrencePresentationDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -90,7 +92,12 @@ public class OccurrenceEndpoints {
     })
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<OccurrenceApplicationDTO.Response>> getOccurrenceById(
-            @Parameter(description = "Occurrence ID", required = true) @PathVariable("id") int id) {
+            @Parameter(
+                description = "Unique identifier of the occurrence",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id) {
         MDC.put("operation", "getOccurrenceById");
         MDC.put("occurrenceId", String.valueOf(id));
         log.info("Starting to retrieve occurrence by id: {}", id);
@@ -230,7 +237,12 @@ public class OccurrenceEndpoints {
     })
     @GetMapping("/user/{userId}")
     public CompletableFuture<ResponseEntity<List<OccurrenceApplicationDTO.Response>>> getOccurrencesByUserId(
-            @Parameter(description = "User ID", required = true) @PathVariable("userId") int userId) {
+            @Parameter(
+                description = "Unique identifier of the user who created the occurrences",
+                required = true,
+                example = "123",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("userId") int userId) {
         MDC.put("operation", "getOccurrencesByUserId");
         MDC.put("userId", String.valueOf(userId));
         log.info("Starting to retrieve occurrences for user: {}", userId);
@@ -274,8 +286,23 @@ public class OccurrenceEndpoints {
     })
     @PostMapping
     public CompletableFuture<ResponseEntity<OccurrenceApplicationDTO.Response>> createOccurrence(
-            @Parameter(description = "Occurrence creation data", required = true)
-            @Valid @RequestBody OccurrencePresentationDTO.CreateRequest request) {
+            @RequestBody(
+                description = "Occurrence creation request payload with all required fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = OccurrencePresentationDTO.CreateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "createOccurrenceExample",
+                            summary = "Create Occurrence Request",
+                            description = "Example request to create a new emergency occurrence",
+                            value = "{\n  \"name\": \"Fire Emergency\",\n  \"description\": \"Large fire reported in downtown area requiring immediate evacuation\",\n  \"dateStart\": \"2024-08-10T10:00:00.000Z\",\n  \"dateEnd\": \"2024-08-10T15:00:00.000Z\",\n  \"dateUpdate\": \"2024-08-10T10:00:00.000Z\",\n  \"active\": true,\n  \"intensity\": \"HIGH\",\n  \"addressId\": 1,\n  \"userId\": 123\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody OccurrencePresentationDTO.CreateRequest request) {
         MDC.put("operation", "createOccurrence");
         MDC.put("addressId", String.valueOf(request.addressId()));
         MDC.put("userId", String.valueOf(request.userId()));
@@ -329,9 +356,29 @@ public class OccurrenceEndpoints {
     })
     @PutMapping("/{id}")
     public CompletableFuture<ResponseEntity<OccurrenceApplicationDTO.Response>> updateOccurrence(
-            @Parameter(description = "Occurrence ID", required = true) @PathVariable("id") int id,
-            @Parameter(description = "Occurrence update data", required = true)
-            @Valid @RequestBody OccurrencePresentationDTO.UpdateRequest request) {
+            @Parameter(
+                description = "Unique identifier of the occurrence to update",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id,
+            @RequestBody(
+                description = "Occurrence update request payload with all fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = OccurrencePresentationDTO.UpdateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "updateOccurrenceExample",
+                            summary = "Update Occurrence Request",
+                            description = "Example request to update an existing occurrence",
+                            value = "{\n  \"name\": \"Fire Emergency - Updated\",\n  \"description\": \"Fire has been contained, evacuation order lifted\",\n  \"dateStart\": \"2024-08-10T10:00:00.000Z\",\n  \"dateEnd\": \"2024-08-10T14:00:00.000Z\",\n  \"dateUpdate\": \"2024-08-10T14:30:00.000Z\",\n  \"active\": false,\n  \"intensity\": \"MODERATE\",\n  \"addressId\": 1,\n  \"userId\": 123\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody OccurrencePresentationDTO.UpdateRequest request) {
         MDC.put("operation", "updateOccurrence");
         MDC.put("occurrenceId", String.valueOf(id));
         MDC.put("addressId", String.valueOf(request.addressId()));
@@ -409,7 +456,12 @@ public class OccurrenceEndpoints {
     })
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteOccurrence(
-            @Parameter(description = "Occurrence ID", required = true) @PathVariable("id") int id) {
+            @Parameter(
+                description = "Unique identifier of the occurrence to delete",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id) {
         MDC.put("operation", "deleteOccurrence");
         MDC.put("occurrenceId", String.valueOf(id));
         log.info("Starting to delete occurrence: {}", id);

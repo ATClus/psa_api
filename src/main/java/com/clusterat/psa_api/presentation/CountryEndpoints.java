@@ -9,7 +9,9 @@ import com.clusterat.psa_api.presentation.dto.CountryPresentationDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -190,8 +192,23 @@ public class CountryEndpoints {
     })
     @PostMapping
     public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> createCountry(
-            @Parameter(description = "Country creation data", required = true)
-            @Valid @RequestBody CountryPresentationDTO.CreateRequest request) {
+            @RequestBody(
+                description = "Country creation request payload with all required fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = CountryPresentationDTO.CreateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "createCountryExample",
+                            summary = "Create Country Request",
+                            description = "Example request to create a new country",
+                            value = "{\n  \"name\": \"Brazil\",\n  \"shortName\": \"BR\",\n  \"isoCode\": \"BRA\"\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody CountryPresentationDTO.CreateRequest request) {
         MDC.put("operation", "createCountry");
         MDC.put("isoCode", request.isoCode());
         log.info("Starting to create country with ISO code: {}", request.isoCode());
@@ -231,9 +248,29 @@ public class CountryEndpoints {
     })
     @PutMapping("/{id}")
     public CompletableFuture<ResponseEntity<CountryApplicationDTO.Response>> updateCountry(
-            @Parameter(description = "Country ID", required = true) @PathVariable("id") int id,
-            @Parameter(description = "Country update data", required = true)
-            @Valid @RequestBody CountryPresentationDTO.UpdateRequest request) {
+            @Parameter(
+                description = "Unique identifier of the country to update",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id,
+            @RequestBody(
+                description = "Country update request payload with all fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = CountryPresentationDTO.UpdateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "updateCountryExample",
+                            summary = "Update Country Request",
+                            description = "Example request to update an existing country",
+                            value = "{\n  \"name\": \"Brazil\",\n  \"shortName\": \"BR\",\n  \"isoCode\": \"BRA\"\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody CountryPresentationDTO.UpdateRequest request) {
         MDC.put("operation", "updateCountry");
         MDC.put("countryId", String.valueOf(id));
         log.info("Starting to update country: {}", id);

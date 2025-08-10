@@ -9,7 +9,9 @@ import com.clusterat.psa_api.presentation.dto.PoliceDepartmentPresentationDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -211,8 +213,23 @@ public class PoliceDepartmentEndpoints {
     })
     @PostMapping
     public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> createPoliceDepartment(
-            @Parameter(description = "Police department creation data", required = true)
-            @Valid @RequestBody PoliceDepartmentPresentationDTO.CreateRequest request) {
+            @RequestBody(
+                description = "Police department creation request payload with all required fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = PoliceDepartmentPresentationDTO.CreateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "createPoliceDepartmentExample",
+                            summary = "Create Police Department Request",
+                            description = "Example request to create a new police department",
+                            value = "{\n  \"overpassId\": \"way/123456789\",\n  \"name\": \"1º Distrito Policial\",\n  \"shortName\": \"1º DP\",\n  \"operator\": \"Polícia Civil\",\n  \"ownership\": \"public\",\n  \"phone\": \"+5511999999999\",\n  \"email\": \"contato@policia.sp.gov.br\",\n  \"latitude\": \"-23.550520\",\n  \"longitude\": \"-46.633309\",\n  \"addressId\": 1\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody PoliceDepartmentPresentationDTO.CreateRequest request) {
         MDC.put("operation", "createPoliceDepartment");
         MDC.put("addressId", String.valueOf(request.addressId()));
         MDC.put("overpassId", request.overpassId());
@@ -267,9 +284,29 @@ public class PoliceDepartmentEndpoints {
     })
     @PutMapping("/{id}")
     public CompletableFuture<ResponseEntity<PoliceDepartmentApplicationDTO.Response>> updatePoliceDepartment(
-            @Parameter(description = "Police Department ID", required = true) @PathVariable("id") int id,
-            @Parameter(description = "Police department update data", required = true)
-            @Valid @RequestBody PoliceDepartmentPresentationDTO.UpdateRequest request) {
+            @Parameter(
+                description = "Unique identifier of the police department to update",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id,
+            @RequestBody(
+                description = "Police department update request payload with all fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = PoliceDepartmentPresentationDTO.UpdateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "updatePoliceDepartmentExample",
+                            summary = "Update Police Department Request",
+                            description = "Example request to update an existing police department",
+                            value = "{\n  \"overpassId\": \"way/987654321\",\n  \"name\": \"2º Distrito Policial\",\n  \"shortName\": \"2º DP\",\n  \"operator\": \"Polícia Civil\",\n  \"ownership\": \"public\",\n  \"phone\": \"+5511888888888\",\n  \"email\": \"contato2@policia.sp.gov.br\",\n  \"latitude\": \"-23.561414\",\n  \"longitude\": \"-46.656271\",\n  \"addressId\": 2\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody PoliceDepartmentPresentationDTO.UpdateRequest request) {
         MDC.put("operation", "updatePoliceDepartment");
         MDC.put("policeDepartmentId", String.valueOf(id));
         MDC.put("addressId", String.valueOf(request.addressId()));

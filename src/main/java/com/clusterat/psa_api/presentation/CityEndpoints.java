@@ -9,7 +9,9 @@ import com.clusterat.psa_api.presentation.dto.CityPresentationDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -85,7 +87,12 @@ public class CityEndpoints {
     })
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<CityApplicationDTO.Response>> getCityById(
-            @Parameter(description = "City ID", required = true) @PathVariable("id") int id) {
+            @Parameter(
+                description = "Unique identifier of the city",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id) {
         MDC.put("operation", "getCityById");
         MDC.put("cityId", String.valueOf(id));
         log.info("Starting to retrieve city by id: {}", id);
@@ -139,7 +146,12 @@ public class CityEndpoints {
     })
     @GetMapping("/ibge/{ibgeCode}")
     public CompletableFuture<ResponseEntity<CityApplicationDTO.Response>> getCityByIbgeCode(
-            @Parameter(description = "IBGE code of the city", required = true) @PathVariable("ibgeCode") String ibgeCode) {
+            @Parameter(
+                description = "Brazilian IBGE (Instituto Brasileiro de Geografia e Estatística) code for the city",
+                required = true,
+                example = "3550308",
+                schema = @Schema(type = "string", pattern = "^[0-9]{7}$")
+            ) @PathVariable("ibgeCode") String ibgeCode) {
         MDC.put("operation", "getCityByIbgeCode");
         MDC.put("ibgeCode", ibgeCode);
         log.info("Starting to retrieve city by IBGE code: {}", ibgeCode);
@@ -193,8 +205,23 @@ public class CityEndpoints {
     })
     @PostMapping
     public CompletableFuture<ResponseEntity<CityApplicationDTO.Response>> createCity(
-            @Parameter(description = "City creation data", required = true)
-            @Valid @RequestBody CityPresentationDTO.CreateRequest request) {
+            @RequestBody(
+                description = "City creation request payload with all required fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = CityPresentationDTO.CreateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "createCityExample",
+                            summary = "Create City Request",
+                            description = "Example request to create a new city",
+                            value = "{\n  \"name\": \"São Paulo\",\n  \"shortName\": \"SP\",\n  \"ibgeCode\": \"3550308\",\n  \"stateId\": 1\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody CityPresentationDTO.CreateRequest request) {
         MDC.put("operation", "createCity");
         MDC.put("stateId", String.valueOf(request.stateId()));
         MDC.put("ibgeCode", request.ibgeCode());
@@ -237,9 +264,29 @@ public class CityEndpoints {
     })
     @PutMapping("/{id}")
     public CompletableFuture<ResponseEntity<CityApplicationDTO.Response>> updateCity(
-            @Parameter(description = "City ID", required = true) @PathVariable("id") int id,
-            @Parameter(description = "City update data", required = true)
-            @Valid @RequestBody CityPresentationDTO.UpdateRequest request) {
+            @Parameter(
+                description = "Unique identifier of the city to update",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id,
+            @RequestBody(
+                description = "City update request payload with all fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = CityPresentationDTO.UpdateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "updateCityExample",
+                            summary = "Update City Request",
+                            description = "Example request to update an existing city",
+                            value = "{\n  \"name\": \"Rio de Janeiro\",\n  \"shortName\": \"RJ\",\n  \"ibgeCode\": \"3304557\",\n  \"stateId\": 2\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody CityPresentationDTO.UpdateRequest request) {
         MDC.put("operation", "updateCity");
         MDC.put("cityId", String.valueOf(id));
         MDC.put("stateId", String.valueOf(request.stateId()));
@@ -307,7 +354,12 @@ public class CityEndpoints {
     })
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteCity(
-            @Parameter(description = "City ID", required = true) @PathVariable("id") int id) {
+            @Parameter(
+                description = "Unique identifier of the city to delete",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id) {
         MDC.put("operation", "deleteCity");
         MDC.put("cityId", String.valueOf(id));
         log.info("Starting to delete city: {}", id);
