@@ -9,7 +9,9 @@ import com.clusterat.psa_api.presentation.dto.AddressPresentationDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -141,8 +143,23 @@ public class AddressEndpoints {
     })
     @PostMapping
     public CompletableFuture<ResponseEntity<AddressApplicationDTO.Response>> createAddress(
-            @Parameter(description = "Address creation data", required = true)
-            @Valid @RequestBody AddressPresentationDTO.CreateRequest request) {
+            @RequestBody(
+                description = "Address creation request payload with all required fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = AddressPresentationDTO.CreateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "createAddressExample",
+                            summary = "Create Address Request",
+                            description = "Example request to create a new address",
+                            value = "{\n  \"street\": \"Rua das Flores\",\n  \"number\": \"123\",\n  \"complement\": \"Apt 45\",\n  \"neighborhood\": \"Centro\",\n  \"cityId\": 1\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody AddressPresentationDTO.CreateRequest request) {
         MDC.put("operation", "createAddress");
         MDC.put("cityId", String.valueOf(request.cityId()));
         log.info("Starting to create address for city: {}", request.cityId());
@@ -186,9 +203,29 @@ public class AddressEndpoints {
     })
     @PutMapping("/{id}")
     public CompletableFuture<ResponseEntity<AddressApplicationDTO.Response>> updateAddress(
-            @Parameter(description = "Address ID", required = true) @PathVariable("id") int id,
-            @Parameter(description = "Address update data", required = true)
-            @Valid @RequestBody AddressPresentationDTO.UpdateRequest request) {
+            @Parameter(
+                description = "Unique identifier of the address to update",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id,
+            @RequestBody(
+                description = "Address update request payload with all fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = AddressPresentationDTO.UpdateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "updateAddressExample",
+                            summary = "Update Address Request",
+                            description = "Example request to update an existing address",
+                            value = "{\n  \"street\": \"Avenida Paulista\",\n  \"number\": \"1000\",\n  \"complement\": \"Conjunto 101\",\n  \"neighborhood\": \"Bela Vista\",\n  \"cityId\": 1\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody AddressPresentationDTO.UpdateRequest request) {
         MDC.put("operation", "updateAddress");
         MDC.put("addressId", String.valueOf(id));
         MDC.put("cityId", String.valueOf(request.cityId()));

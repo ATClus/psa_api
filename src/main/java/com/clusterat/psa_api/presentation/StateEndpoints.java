@@ -9,7 +9,9 @@ import com.clusterat.psa_api.presentation.dto.StatePresentationDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -86,7 +88,12 @@ public class StateEndpoints {
     })
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<StateApplicationDTO.Response>> getStateById(
-            @Parameter(description = "State ID", required = true) @PathVariable("id") int id) {
+            @Parameter(
+                description = "Unique identifier of the state",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id) {
         MDC.put("operation", "getStateById");
         MDC.put("stateId", String.valueOf(id));
         log.info("Starting to retrieve state by id: {}", id);
@@ -141,7 +148,12 @@ public class StateEndpoints {
     })
     @GetMapping("/ibge/{ibgeCode}")
     public CompletableFuture<ResponseEntity<StateApplicationDTO.Response>> getStateByIbgeCode(
-            @Parameter(description = "IBGE geographic code", required = true) @PathVariable("ibgeCode") String ibgeCode) {
+            @Parameter(
+                description = "Brazilian IBGE (Instituto Brasileiro de Geografia e Estatística) geographic code for the state",
+                required = true,
+                example = "11",
+                schema = @Schema(type = "string", pattern = "^[0-9]{1,2}$")
+            ) @PathVariable("ibgeCode") String ibgeCode) {
         MDC.put("operation", "getStateByIbgeCode");
         MDC.put("ibgeCode", ibgeCode);
         log.info("Starting to retrieve state by IBGE code: {}", ibgeCode);
@@ -196,8 +208,23 @@ public class StateEndpoints {
     })
     @PostMapping
     public CompletableFuture<ResponseEntity<StateApplicationDTO.Response>> createState(
-            @Parameter(description = "State creation data", required = true)
-            @Valid @RequestBody StatePresentationDTO.CreateRequest request) {
+            @RequestBody(
+                description = "State creation request payload with all required fields",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = StatePresentationDTO.CreateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "createStateExample",
+                            summary = "Create State Request",
+                            description = "Example request to create a new Brazilian state",
+                            value = "{\n  \"name\": \"São Paulo\",\n  \"shortName\": \"SP\",\n  \"region\": \"SUDESTE\",\n  \"ibgeCode\": \"35\",\n  \"countryId\": 1\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody StatePresentationDTO.CreateRequest request) {
         MDC.put("operation", "createState");
         MDC.put("countryId", String.valueOf(request.countryId()));
         MDC.put("ibgeCode", request.ibgeCode());
@@ -239,7 +266,12 @@ public class StateEndpoints {
     })
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteState(
-            @Parameter(description = "State ID", required = true) @PathVariable("id") int id) {
+            @Parameter(
+                description = "Unique identifier of the state to delete",
+                required = true,
+                example = "1",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id) {
         MDC.put("operation", "deleteState");
         MDC.put("stateId", String.valueOf(id));
         log.info("Starting to delete state: {}", id);

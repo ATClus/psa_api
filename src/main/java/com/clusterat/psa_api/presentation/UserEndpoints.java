@@ -9,7 +9,9 @@ import com.clusterat.psa_api.presentation.dto.UserPresentationDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -80,7 +82,12 @@ public class UserEndpoints {
     })
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<UserApplicationDTO.Response>> getUserById(
-            @Parameter(description = "User ID", required = true) @PathVariable("id") int id) {
+            @Parameter(
+                description = "Unique identifier of the user",
+                required = true,
+                example = "123",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id) {
         MDC.put("operation", "getUserById");
         MDC.put("userId", String.valueOf(id));
         log.info("Starting to retrieve user by id: {}", id);
@@ -129,7 +136,12 @@ public class UserEndpoints {
     })
     @GetMapping("/cognito/{cognitoId}")
     public CompletableFuture<ResponseEntity<UserApplicationDTO.Response>> getUserByCognitoId(
-            @Parameter(description = "AWS Cognito User ID", required = true) @PathVariable("cognitoId") int cognitoId) {
+            @Parameter(
+                description = "AWS Cognito User identifier",
+                required = true,
+                example = "456",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("cognitoId") int cognitoId) {
         MDC.put("operation", "getUserByCognitoId");
         MDC.put("cognitoId", String.valueOf(cognitoId));
         log.info("Starting to retrieve user by cognito id: {}", cognitoId);
@@ -178,8 +190,23 @@ public class UserEndpoints {
     })
     @PostMapping
     public CompletableFuture<ResponseEntity<UserApplicationDTO.Response>> createUser(
-            @Parameter(description = "User creation data", required = true)
-            @Valid @RequestBody UserPresentationDTO.CreateRequest request) {
+            @RequestBody(
+                description = "User creation request payload",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = UserPresentationDTO.CreateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "createUserExample",
+                            summary = "Create User Request",
+                            description = "Example request to create a new user with Cognito ID",
+                            value = "{\n  \"cognitoId\": 12345\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody UserPresentationDTO.CreateRequest request) {
         MDC.put("operation", "createUser");
         MDC.put("cognitoId", String.valueOf(request.cognitoId()));
         log.info("Starting to create user with cognito id: {}", request.cognitoId());
@@ -211,9 +238,29 @@ public class UserEndpoints {
     })
     @PutMapping("/{id}")
     public CompletableFuture<ResponseEntity<UserApplicationDTO.Response>> updateUser(
-            @Parameter(description = "User ID", required = true) @PathVariable("id") int id,
-            @Parameter(description = "User update data", required = true)
-            @Valid @RequestBody UserPresentationDTO.CreateRequest request) {
+            @Parameter(
+                description = "Unique identifier of the user to update",
+                required = true,
+                example = "123",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id,
+            @RequestBody(
+                description = "User update request payload",
+                required = true,
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = UserPresentationDTO.CreateRequest.class),
+                    examples = {
+                        @ExampleObject(
+                            name = "updateUserExample",
+                            summary = "Update User Request",
+                            description = "Example request to update a user's Cognito ID",
+                            value = "{\n  \"cognitoId\": 67890\n}"
+                        )
+                    }
+                )
+            )
+            @Valid @org.springframework.web.bind.annotation.RequestBody UserPresentationDTO.CreateRequest request) {
         MDC.put("operation", "updateUser");
         MDC.put("userId", String.valueOf(id));
         MDC.put("cognitoId", String.valueOf(request.cognitoId()));
@@ -273,7 +320,12 @@ public class UserEndpoints {
     })
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseEntity<Void>> deleteUser(
-            @Parameter(description = "User ID", required = true) @PathVariable("id") int id) {
+            @Parameter(
+                description = "Unique identifier of the user to delete",
+                required = true,
+                example = "123",
+                schema = @Schema(type = "integer", minimum = "1")
+            ) @PathVariable("id") int id) {
         MDC.put("operation", "deleteUser");
         MDC.put("userId", String.valueOf(id));
         log.info("Starting to delete user: {}", id);
